@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FUGA Smart Campus Navigation</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Segoe UI", Roboto, Arial, sans-serif;
+        --bg: #f4f7fb;
+        --card: #ffffff;
+        --text: #14213d;
+        --muted: #5e6b85;
+        --accent: #1f8f5f;
+        --border: #dfe6ef;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: linear-gradient(135deg, #f4f7fb 0%, #eef4f9 100%); color: var(--text); }
+      .app-shell { padding: 24px; }
+      .hero {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 20px;
+        padding: 24px 28px;
+        border-radius: 24px;
+        background: linear-gradient(90deg, #0f172a, #182a45 60%, #1f4f3d);
+        color: #fff;
+      }
+      .layout { display: grid; grid-template-columns: 320px 1fr; gap: 18px; }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 18px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+      }
+      .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+      select, button { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; font-size: 0.95rem; }
+      button { background: var(--accent); color: #fff; cursor: pointer; border: none; }
+      .actions { display: flex; gap: 10px; margin-top: 6px; }
+      #summary { margin-top: 14px; padding: 10px 12px; background: #f4fbf7; border: 1px solid #dcefe6; border-radius: 12px; color: #1f5c3d; min-height: 50px; }
+      #campusMap { width: 100%; height: 500px; background: #f9fff9; border-radius: 16px; border: 1px solid var(--border); }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="hero">
+        <div>
+          <h1 style="margin: 0; font-size: 2rem; color: #fff;">FUGA Smart Campus Navigation</h1>
+          <p style="margin: 8px 0 0 0; color: rgba(255,255,255,0.85);">Real offline routing</p>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="sidebar">
+          <div class="card">
+            <h2>Find your route</h2>
+            <label class="field">
+              <span>From</span>
+              <select id="startSelect"></select>
+            </label>
+            <label class="field">
+              <span>To</span>
+              <select id="endSelect"></select>
+            </label>
+            <div class="actions">
+              <button id="routeBtn">Show shortest path</button>
+              <button id="clearBtn">Reset</button>
+            </div>
+            <div id="summary"></div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div style="margin-bottom: 10px; color: var(--muted);">Campus map</div>
+          <svg id="campusMap" viewBox="0 0 1000 700"></svg>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      // ALL LOGIC INLINE - NO MODULES
+
+      function dijkstra(graph, startNodeId, endNodeId) {
+        const visited = new Set();
+        const distances = {};
+        const previous = {};
+        const nodes = Object.keys(graph.nodes);
+
+        nodes.forEach((nodeId) => {
+          distances[nodeId] = Number.POSITIVE_INFINITY;
+        });
+
+        distances[startNodeId] = 0;
+
+        while (visited.size < nodes.length) {
+          let currentNode = null;
+          let currentDistance = Number.POSITIVE_INFINITY;
+
+          nodes.forEach((nodeId) => {
+            if (!visited.has(nodeId) && distances[nodeId] < currentDistance) {
+              currentNode = nodeId;
+              currentDistance = distances[nodeId];
+            }
+          });
+
+          if (!currentNode || currentDistance === Number.POSITIVE_INFINITY) break;
+
+          visited.add(currentNode);
+
+          const node = graph.nodes[currentNode];
+          Object.entries(node.neighbors).forEach(([neighborId, weight]) => {
+            const nextDistance = distances[currentNode] + weight;
+            if (nextDistance < distances[neighborId]) {
+              distances[neighborId] = nextDistance;
+              previous[neighborId] = currentNode;
+            }
+          });
+
+          if (currentNode === endNodeId) break;
+        }
+
+        if (distances[endNodeId] === Number.POSITIVE_INFINITY) return [];
+
+        const path = [];
+        let cursor = endNodeId;
+        while (cursor) {
+          path.unshift(cursor);
+          cursor = previous[cursor];
+        }
+
+        return path;
+      }
+
+      function buildCampusGraph(roadsGeojson, buildingsGeojson) {
+        const nodes = {};
+        const coordMap = {}; // Map coordinates to node IDs for snapping
+
+        const ensureNode = (id, label, x, y) => {
+          // Check if a node already exists at this coordinate
+          const coordKey = `${Math.round(x)},${Math.round(y)}`;
+          if (coordMap[coordKey]) {
+            return nodes[coordMap[coordKey]];
+          }
+
+          if (!nodes[id]) {
+            nodes[id] = { id, label, x, y, neighbors: {} };
+          }
+          coordMap[coordKey] = id;
+          return nodes[id];
+        };
+
+        const addEdge = (fromId, toId, weight) => {
+          if (!nodes[fromId] || !nodes[toId]) return;
+          nodes[fromId].neighbors[toId] = weight;
+          nodes[toId].neighbors[fromId] = weight;
+        };
+
+        const distance = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+
+        // Build road nodes and connect them
+        roadsGeojson.features.forEach((feature) => {
+          const coords = feature.geometry.coordinates;
+          const roadName = feature.properties?.name || "Road";
+          const nodeIds = [];
+
+          // First, ensure all nodes exist (and snap to existing ones)
+          for (let i = 0; i < coords.length; i++) {
+            const coord = coords[i];
+            const nodeId = `${roadName}-p${i}`;
+            const node = ensureNode(nodeId, `${roadName} junction`, coord[0], coord[1]);
+            nodeIds.push(node.id);
+          }
+
+          // Then connect adjacent nodes
+          for (let i = 0; i < nodeIds.length - 1; i++) {
+            addEdge(nodeIds[i], nodeIds[i + 1], distance(coords[i], coords[i + 1]));
+          }
+        });
+
+        // Add buildings and connect to nearest road
+        buildingsGeojson.features.forEach((building) => {
+          const buildingId = building.properties?.id;
+          const [x, y] = building.geometry.coordinates;
+          
+          // Always create the building node (don't snap to road nodes)
+          if (!nodes[buildingId]) {
+            nodes[buildingId] = { id: buildingId, label: building.properties?.name, x, y, neighbors: {} };
+          }
+
+          let nearestId = null;
+          let nearestDistance = Number.POSITIVE_INFINITY;
+
+          Object.values(nodes).forEach((node) => {
+            if (node.id === buildingId) return;
+            const d = Math.hypot(node.x - x, node.y - y);
+            if (d < nearestDistance) {
+              nearestDistance = d;
+              nearestId = node.id;
+            }
+          });
+
+          if (nearestId) {
+            addEdge(buildingId, nearestId, nearestDistance * 0.35);
+          }
+        });
+
+        return { nodes };
+      }
+
+      // Initialize app
+      const svg = document.getElementById('campusMap');
+      const startSelect = document.getElementById('startSelect');
+      const endSelect = document.getElementById('endSelect');
+      const routeBtn = document.getElementById('routeBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      const summary = document.getElementById('summary');
+
+      let graph = null;
+      let buildingNames = [];
+      let roadsGeojson = null;
+      let buildingsGeojson = null;
+
+      // Expose to window for debugging
+      window.debugGraph = () => ({
+        graph,
+        buildingNames,
+        nodeCount: graph ? Object.keys(graph.nodes).length : 0
+      });
+
+      async function init() {
+        try {
+          // Load data
+          const [r1, r2] = await Promise.all([
+            fetch('./data/roads.geojson').then(r => r.json()),
+            fetch('./data/buildings.geojson').then(r => r.json())
+          ]);
+          roadsGeojson = r1;
+          buildingsGeojson = r2;
+
+          // Build graph
+          graph = buildCampusGraph(roadsGeojson, buildingsGeojson);
+          buildingNames = buildingsGeojson.features.map(f => f.properties?.name).filter(Boolean);
+
+          // Populate selects
+          const opts = buildingNames.map(n => `<option>${n}</option>`).join('');
+          startSelect.innerHTML = opts;
+          endSelect.innerHTML = opts;
+
+          // Render campus
+          svg.innerHTML = '';
+          
+          // Draw roads
+          const roadGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          roadsGeojson.features.forEach(feature => {
+            const coords = feature.geometry.coordinates;
+            const pathData = coords.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p[0]} ${p[1]}`).join(' ');
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            line.setAttribute('d', pathData);
+            line.setAttribute('stroke', '#5d8f6e');
+            line.setAttribute('stroke-width', '10');
+            line.setAttribute('fill', 'none');
+            roadGroup.appendChild(line);
+          });
+          svg.appendChild(roadGroup);
+
+          // Draw buildings
+          const bldgGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          buildingsGeojson.features.forEach(feature => {
+            const [x, y] = feature.geometry.coordinates;
+            const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            rect.setAttribute('x', x - 12);
+            rect.setAttribute('y', y - 12);
+            rect.setAttribute('width', '24');
+            rect.setAttribute('height', '24');
+            rect.setAttribute('rx', '6');
+            rect.setAttribute('fill', '#f59e0b');
+            rect.setAttribute('stroke', '#7c3f00');
+            rect.setAttribute('stroke-width', '2');
+            bldgGroup.appendChild(rect);
+
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', x + 18);
+            text.setAttribute('y', y + 4);
+            text.setAttribute('fill', '#14213d');
+            text.setAttribute('font-size', '13');
+            text.textContent = feature.properties?.name;
+            bldgGroup.appendChild(text);
+          });
+          svg.appendChild(bldgGroup);
+
+          // Add route layer
+          const routeGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          routeGroup.setAttribute('id', 'route-layer');
+          svg.appendChild(routeGroup);
+
+          summary.textContent = 'Select a destination and click "Show shortest path"';
+        } catch (err) {
+          summary.textContent = `Error: ${err.message}`;
+          console.error(err);
+        }
+      }
+
+      // Handle route button
+      routeBtn.addEventListener('click', () => {
+        const start = startSelect.value;
+        const end = endSelect.value;
+        const startId = buildingsGeojson.features.find(f => f.properties?.name === start)?.properties?.id;
+        const endId = buildingsGeojson.features.find(f => f.properties?.name === end)?.properties?.id;
+
+        if (!startId || !endId) {
+          summary.textContent = 'Invalid selection';
+          return;
+        }
+
+        const path = dijkstra(graph, startId, endId);
+        const routeLayer = document.getElementById('route-layer');
+        routeLayer.innerHTML = '';
+
+        if (path.length > 0) {
+          const points = path.map(id => {
+            const node = graph.nodes[id];
+            return `${node.x},${node.y}`;
+          }).join(' ');
+
+          const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+          polyline.setAttribute('points', points);
+          polyline.setAttribute('fill', 'none');
+          polyline.setAttribute('stroke', '#ef4444');
+          polyline.setAttribute('stroke-width', '8');
+          polyline.setAttribute('stroke-linecap', 'round');
+          routeLayer.appendChild(polyline);
+
+          let distance = 0;
+          for (let i = 0; i < path.length - 1; i++) {
+            const n1 = graph.nodes[path[i]];
+            const n2 = graph.nodes[path[i + 1]];
+            distance += Math.hypot(n1.x - n2.x, n1.y - n2.y);
+          }
+          const time = Math.max(4, Math.round((distance / 90) * 60));
+
+          summary.innerHTML = `<strong>Route found!</strong><br/>Distance: ${distance.toFixed(1)} units · Time: ${time} min`;
+        } else {
+          summary.textContent = 'No route found';
+        }
+      });
+
+      clearBtn.addEventListener('click', () => {
+        document.getElementById('route-layer').innerHTML = '';
+        summary.textContent = 'Select a destination';
+      });
+
+      // Start
+      init();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,50 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "name": "Main Ring Road" },
+      "geometry": { "type": "LineString", "coordinates": [[140, 120], [280, 140], [430, 180], [620, 210], [780, 240]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Science Road" },
+      "geometry": { "type": "LineString", "coordinates": [[430, 180], [450, 320], [470, 470], [470, 590]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Agriculture Road" },
+      "geometry": { "type": "LineString", "coordinates": [[620, 210], [650, 340], [690, 470], [720, 620]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Arts Road" },
+      "geometry": { "type": "LineString", "coordinates": [[280, 140], [240, 300], [220, 450], [200, 600]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Education Road" },
+      "geometry": { "type": "LineString", "coordinates": [[780, 240], [830, 360], [840, 500], [860, 620]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Library Spine" },
+      "geometry": { "type": "LineString", "coordinates": [[430, 180], [540, 250], [640, 300], [720, 300]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Hostel Loop" },
+      "geometry": { "type": "LineString", "coordinates": [[220, 450], [270, 500], [320, 550], [380, 580], [450, 560]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Cafeteria Link" },
+      "geometry": { "type": "LineString", "coordinates": [[470, 590], [570, 610], [720, 620]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "ICT Link" },
+      "geometry": { "type": "LineString", "coordinates": [[720, 300], [760, 340], [780, 400], [760, 500]] }
+    }
+  ]
+}

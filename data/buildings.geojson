@@ -1,0 +1,70 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "id": "main-gate", "name": "Main Gate" },
+      "geometry": { "type": "Point", "coordinates": [140, 120] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "faculty-of-science", "name": "Faculty of Science" },
+      "geometry": { "type": "Point", "coordinates": [470, 590] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "faculty-of-agriculture", "name": "Faculty of Agriculture" },
+      "geometry": { "type": "Point", "coordinates": [720, 620] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "school-of-arts-social-science", "name": "School of Arts & Social Science" },
+      "geometry": { "type": "Point", "coordinates": [200, 600] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "school-of-education", "name": "School of Education" },
+      "geometry": { "type": "Point", "coordinates": [860, 620] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "old-library", "name": "Old Library" },
+      "geometry": { "type": "Point", "coordinates": [640, 300] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "male-new-hostel", "name": "Male New Hostel" },
+      "geometry": { "type": "Point", "coordinates": [320, 550] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "female-hostel-annex", "name": "Female Hostel Annex" },
+      "geometry": { "type": "Point", "coordinates": [380, 580] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "human-resources", "name": "Human Resources" },
+      "geometry": { "type": "Point", "coordinates": [760, 500] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "library-mosque", "name": "Library Mosque" },
+      "geometry": { "type": "Point", "coordinates": [540, 250] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "student-affairs", "name": "Student Affairs Division" },
+      "geometry": { "type": "Point", "coordinates": [760, 340] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "cafeteria", "name": "Cafeteria" },
+      "geometry": { "type": "Point", "coordinates": [570, 610] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "nitda-computer-lab", "name": "NITDA Computer Lab" },
+      "geometry": { "type": "Point", "coordinates": [780, 400] }
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+:root {
+  color-scheme: light;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  --bg: #f4f7fb;
+  --card: #ffffff;
+  --text: #14213d;
+  --muted: #5e6b85;
+  --accent: #1f8f5f;
+  --accent-2: #f59e0b;
+  --border: #dfe6ef;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: linear-gradient(135deg, #f4f7fb 0%, #eef4f9 100%);
+  color: var(--text);
+}
+
+.app-shell { padding: 24px; }
+.hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+  padding: 24px 28px;
+  border-radius: 24px;
+  background: linear-gradient(90deg, #0f172a, #182a45 60%, #1f4f3d);
+  color: #fff;
+  box-shadow: 0 16px 35px rgba(15, 23, 42, 0.14);
+}
+.eyebrow { text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.75rem; opacity: 0.8; margin: 0 0 6px; }
+.hero h1 { margin: 0 0 8px; font-size: 2rem; }
+.hero-copy { margin: 0; max-width: 640px; color: rgba(255,255,255,0.85); }
+.pill, .badge {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.14);
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.layout { display: grid; grid-template-columns: 320px 1fr; gap: 18px; }
+.sidebar { display: flex; flex-direction: column; gap: 16px; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 18px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+.card h2, .card h3 { margin-top: 0; }
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.field span { font-size: 0.95rem; color: var(--muted); }
+select, button {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+}
+button {
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  border: none;
+  transition: transform 0.15s ease;
+}
+button:hover { transform: translateY(-1px); }
+button.ghost {
+  background: #f5f8fd;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.actions { display: flex; gap: 10px; margin-top: 6px; }
+.summary {
+  margin-top: 14px;
+  padding: 10px 12px;
+  background: #f4fbf7;
+  border: 1px solid #dcefe6;
+  border-radius: 12px;
+  color: #1f5c3d;
+  min-height: 50px;
+}
+.map-card { padding: 16px; }
+.map-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  color: var(--muted);
+}
+#campusMap {
+  width: 100%;
+  height: min(70vh, 700px);
+  background: radial-gradient(circle at top, #f9fff9 0%, #f2f7f4 50%, #ebf3eb 100%);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+}
+ul { padding-left: 18px; color: var(--muted); }
+li + li { margin-top: 6px; }
+
+@media (max-width: 960px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar { order: 2; }
+}

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FUGA Smart Campus Navigation</title>
+    <link rel="stylesheet" href="css/dashboard.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Offline navigation prototype</p>
+          <h1>FUGA Smart Campus Navigation</h1>
+          <p class="hero-copy">
+            A lightweight campus routing system built from campus landmarks, roads, and an offline graph.
+          </p>
+        </div>
+        <div class="pill">No internet required</div>
+      </header>
+
+      <main class="layout">
+        <section class="sidebar">
+          <div class="card">
+            <h2>Find your route</h2>
+            <label class="field">
+              <span>From</span>
+              <select id="startSelect"></select>
+            </label>
+            <label class="field">
+              <span>To</span>
+              <select id="endSelect"></select>
+            </label>
+            <div class="actions">
+              <button id="routeBtn">Show shortest path</button>
+              <button id="clearBtn" class="ghost">Reset</button>
+            </div>
+            <div id="summary" class="summary"></div>
+          </div>
+
+          <div class="card">
+            <h3>Campus highlights</h3>
+            <ul>
+              <li>Main Gate</li>
+              <li>Faculty of Science</li>
+              <li>Faculty of Agriculture</li>
+              <li>School of Arts &amp; Social Science</li>
+              <li>School of Education</li>
+              <li>NITDA Computer Lab</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="card map-card">
+          <div class="map-toolbar">
+            <span id="mapTitle">Campus map</span>
+            <span class="badge">Graph-based routing</span>
+          </div>
+          <svg id="campusMap" viewBox="0 0 1000 700" role="img" aria-label="Campus navigation map"></svg>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="js/map.js"></script>
+  </body>
+</html>
